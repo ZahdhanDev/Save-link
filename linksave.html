@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkSave — Simpan Link</title>
+<style>
+:root{--bg:#f4f7ff;--card:#fff;--ink:#17233c;--muted:#71809b;--blue:#4263eb;--blue2:#6c8cff;--line:#e6ebf5;--red:#e5484d;--shadow:0 12px 35px rgba(37,57,112,.09)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top left,#e2ebff 0,transparent 35%),var(--bg);color:var(--ink);min-height:100vh;padding:26px 14px}
+.wrap{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;margin:6px 0 24px}
+.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--blue),#8a5cf6);display:grid;place-items:center;color:white;font-size:25px;box-shadow:0 8px 20px #4263eb38}
+h1{font-size:25px;margin:0;letter-spacing:-.7px} .sub{margin:3px 0 0;color:var(--muted);font-size:13px}
+.panel{background:var(--card);border:1px solid #e9eef8;border-radius:23px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+.label{font-size:13px;font-weight:750;display:block;margin:0 0 9px}
+.inputrow{display:flex;gap:10px}
+input{width:100%;min-width:0;border:1.5px solid var(--line);background:#fbfcff;border-radius:13px;padding:14px 15px;font:inherit;font-size:14px;outline:none;transition:.2s}
+input:focus{border-color:var(--blue2);box-shadow:0 0 0 4px #4263eb15}
+button{border:0;border-radius:13px;padding:13px 17px;font:inherit;font-size:14px;font-weight:750;cursor:pointer;transition:transform .15s,filter .15s;white-space:nowrap}
+button:active{transform:scale(.97)}button:hover{filter:brightness(.97)}
+.primary{background:linear-gradient(135deg,var(--blue),#5a7cff);color:white;box-shadow:0 7px 15px #4263eb30}
+.hint{font-size:12px;color:var(--muted);margin:10px 0 0}
+.listhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 2px 13px}
+.listhead h2{font-size:17px;margin:0}.count{font-size:12px;color:var(--muted);background:#e9efff;padding:6px 10px;border-radius:99px;font-weight:750}
+.search{margin-bottom:13px}
+.saved-list{display:flex;flex-direction:column;gap:11px;max-height:52vh;min-height:115px;overflow-y:auto;padding:2px 4px 8px 2px;scrollbar-width:thin;scrollbar-color:#c7d2f3 transparent}
+.item{background:white;border:1px solid var(--line);border-radius:17px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 5px 16px #243c7210;animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.favicon{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#eef2ff;display:grid;place-items:center;color:var(--blue);font-weight:900;font-size:18px;overflow:hidden}
+.favicon img{width:22px;height:22px}
+.details{min-width:0;flex:1}.title{font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:5px}.url{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;gap:7px;align-items:center}.open{background:#eaf0ff;color:#2d50d7;padding:10px 12px}.delete{background:#fff0f0;color:var(--red);padding:10px 11px;font-size:16px}
+.empty{border:1.5px dashed #d8e0f2;border-radius:17px;text-align:center;padding:28px 15px;color:var(--muted);font-size:13px}.empty .emoji{font-size:30px;margin-bottom:7px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;background:#17233c;color:white;padding:11px 16px;border-radius:12px;font-size:13px;pointer-events:none;transition:.2s;max-width:90vw;text-align:center;z-index:5}.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{text-align:center;color:#98a4ba;font-size:11px;padding:8px}
+@media(max-width:520px){body{padding:19px 11px}.panel{padding:16px;border-radius:19px}h1{font-size:23px}.inputrow{flex-direction:column}.inputrow button{width:100%}.item{padding:11px;gap:9px}.favicon{width:36px;height:36px;flex-basis:36px}.actions{gap:5px}.open{padding:10px;font-size:12px}.delete{padding:9px}.saved-list{max-height:50vh}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">↗</div>
+    <div><h1>LinkSave</h1><p class="sub">Simpan link favoritmu, buka kapan saja.</p></div>
+  </header>
+
+  <section class="panel">
+    <label class="label" for="linkInput">Masukkan link website</label>
+    <div class="inputrow">
+      <input id="linkInput" type="text" inputmode="url" placeholder="https://contoh.com" autocomplete="url">
+      <button class="primary" id="saveBtn">＋ Simpan link</button>
+    </div>
+    <p class="hint">Link tersimpan di perangkat ini, jadi tetap ada saat halaman dibuka lagi di browser yang sama.</p>
+  </section>
+
+  <div class="listhead">
+    <h2>Link tersimpan</h2>
+    <span class="count" id="count">0 link</span>
+  </div>
+  <input class="search" id="searchInput" type="search" placeholder="⌕  Cari link tersimpan..." aria-label="Cari link tersimpan">
+  <section class="saved-list" id="savedList" aria-live="polite"></section>
+  <footer>LinkSave · Simpel, rapi, dan praktis</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+  const KEY = 'linksave_items_v1';
+  const input = document.getElementById('linkInput');
+  const list = document.getElementById('savedList');
+  const count = document.getElementById('count');
+  const search = document.getElementById('searchInput');
+  const toastBox = document.getElementById('toast');
+  let items = [];
+  try { items = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(items)) items = []; } catch { items = []; }
+
+  function toast(message) {
+    toastBox.textContent = message;
+    toastBox.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => toastBox.classList.remove('show'), 2200);
+  }
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(items)); }
+    catch { toast('Penyimpanan browser penuh. Hapus beberapa link lalu coba lagi.'); }
+  }
+  function safeUrl(raw) {
+    let value = raw.trim();
+    if (!value) return null;
+    if (!/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value)) value = 'https://' + value;
+    try {
+      const url = new URL(value);
+      if (!['http:', 'https:'].includes(url.protocol)) return null;
+      if (!url.hostname.includes('.') && url.hostname !== 'localhost') return null;
+      return url.href;
+    } catch { return null; }
+  }
+  function addLink() {
+    const url = safeUrl(input.value);
+    if (!url) { toast('Masukkan link yang valid, contoh: https://contoh.com'); input.focus(); return; }
+    if (items.some(item => item.url === url)) { toast('Link ini sudah ada di daftar.'); return; }
+    let host;
+    try { host = new URL(url).hostname.replace(/^www\./, ''); } catch { host = url; }
+    items.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,7), url, title: host });
+    persist(); input.value = ''; render(); toast('Link berhasil disimpan!');
+  }
+  function render() {
+    const term = search.value.trim().toLowerCase();
+    const filtered = items.filter(item => (item.title + ' ' + item.url).toLowerCase().includes(term));
+    count.textContent = `${items.length} link`;
+    list.replaceChildren();
+    if (!filtered.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = items.length ? '<div class="emoji">🔎</div>Tidak ada link yang cocok dengan pencarian.' : '<div class="emoji">🔖</div><strong>Belum ada link tersimpan</strong><br>Masukkan link di atas, lalu tekan “Simpan link”.';
+      list.appendChild(empty); return;
+    }
+    filtered.forEach(item => {
+      const card = document.createElement('article'); card.className = 'item';
+      const icon = document.createElement('div'); icon.className = 'favicon';
+      const img = document.createElement('img');
+      try { img.src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(new URL(item.url).hostname) + '&sz=64'; img.alt = ''; img.onerror = () => { icon.textContent = '↗'; }; icon.appendChild(img); }
+      catch { icon.textContent = '↗'; }
+      const details = document.createElement('div'); details.className = 'details';
+      const title = document.createElement('div'); title.className = 'title'; title.textContent = item.title || item.url;
+      const url = document.createElement('div'); url.className = 'url'; url.textContent = item.url;
+      details.append(title, url);
+      const actions = document.createElement('div'); actions.className = 'actions';
+      const open = document.createElement('button'); open.className = 'open'; open.textContent = '↗ Open link';
+      open.addEventListener('click', () => window.open(item.url, '_blank', 'noopener,noreferrer'));
+      const del = document.createElement('button'); del.className = 'delete'; del.textContent = '×'; del.title = 'Hapus link'; del.setAttribute('aria-label', 'Hapus ' + item.title);
+      del.addEventListener('click', () => { items = items.filter(x => x.id !== item.id); persist(); render(); toast('Link dihapus.'); });
+      actions.append(open, del); card.append(icon, details, actions); list.appendChild(card);
+    });
+  }
+  document.getElementById('saveBtn').addEventListener('click', addLink);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') addLink(); });
+  search.addEventListener('input', render);
+  render();
+})();
+</script>
+</body>
+</html>
